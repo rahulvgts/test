@@ -1,0 +1,49 @@
+
+name: Development
+
+on:
+  push:
+    branches: dev
+
+
+env:
+  APP_NAME: test-repo
+  APP_ENV: dev
+  APP_DIR: /www/data
+
+
+jobs:
+  build:
+    runs-on: test-repo
+
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v4  
+        with:
+          path: 'dev'
+
+      - name: Declare Variables
+        shell: bash
+        run: |
+          echo "SHA_SHORT=$(git rev-parse --short "$GITHUB_SHA")" > "$GITHUB_ENV"
+          echo "CURRENT_DIR=$APP_DIR/$APP_NAME/$APP_ENV/repos/$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
+
+      - name: Coping Files
+        run: |
+          sudo mkdir -p $CURRENT_DIR
+          sudo cp -a $APP_ENV/. $CURRENT_DIR
+          sudo chmod -R 777 $CURRENT_DIR && sudo chmod -R 777 $CURRENT_DIR/*
+          sudo chown -R unit:unit $CURRENT_DIR && sudo chown -R unit:unit $CURRENT_DIR/*
+
+
+      - name: Updating Configuration - 1
+        run: |
+          sudo curl -X PUT --unix-socket /var/run/control.unit.sock /var/run/control.unit.sock http://localhost/config/applications/blog/root \
+          -H "Content-Type: application/json" \
+          -d '"${{ env.CURRENT_DIR }}"' || exit 1
+
+      - name: Remove Excess Folders
+        run: |
+          cd $CURRENT_DIR && cd ../ || exit
+          stat -c '%W %n' * | sort -k1n | awk '{print $2}' | head -n -2 | sudo xargs -r rm -r
