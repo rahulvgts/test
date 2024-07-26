@@ -7,14 +7,14 @@ on:
 
 
 env:
-  APP_NAME: test-repo
+  APP_NAME: test
   APP_ENV: dev
   APP_DIR: /www/data
 
 
 jobs:
   build:
-    runs-on: test-repo
+    runs-on: runner-123
 
 
     steps:
