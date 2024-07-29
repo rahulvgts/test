@@ -26,7 +26,8 @@ jobs:
       - name: Declare Variables
         shell: bash
         run: |
-          echo "SHA_SHORT=$(git rev-parse --short "$GITHUB_SHA")" > "$GITHUB_ENV"
+          cd dev
+          echo "SHA_SHORT=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
           echo "CURRENT_DIR=$APP_DIR/$APP_NAME/$APP_ENV/repos/$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
 
       - name: Coping Files
