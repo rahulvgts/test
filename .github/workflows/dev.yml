@@ -1,23 +1,18 @@
-
 name: Development
 
 on:
   push:
     branches: dev
 
-
 env:
   APP_NAME: test
   APP_ENV: dev
   APP_DIR: /www/data
-  assigned_approver: ${{ vars.ASSIGNED_APPROVER }}
-
 
 jobs:
   build:
-    if: github.event.pull_request.base.ref == 'uat' && github.event.review.state == 'approved' && github.event.review.user.login == env.assigned_approver
+    if: github.event.pull_request.base.ref == 'uat' && github.event.review.state == 'approved' && github.event.review.user.login == secrets.ASSIGNED_APPROVER
     runs-on: runner-123
-
 
     steps:
       - name: Clone Repository
@@ -32,13 +27,12 @@ jobs:
           echo "SHA_SHORT=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
           echo "CURRENT_DIR=$APP_DIR/$APP_NAME/$APP_ENV/repos/$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
 
-      - name: Coping Files
+      - name: Copying Files
         run: |
           sudo mkdir -p $CURRENT_DIR
           sudo cp -a $APP_ENV/. $CURRENT_DIR
           sudo chmod -R 777 $CURRENT_DIR && sudo chmod -R 777 $CURRENT_DIR/*
           sudo chown -R unit:unit $CURRENT_DIR && sudo chown -R unit:unit $CURRENT_DIR/*
-
 
       - name: Updating Configuration - 1
         run: |
