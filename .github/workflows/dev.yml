@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    if: github.event.pull_request.base.ref == 'uat' && github.event.review.state == 'APPROVED' && github.event.review.user.login == 'harishvgts' || github.event.review.user.login == 'nandavgts'
+    if: github.event.pull_request.base.ref == 'uat' && github.event.review.state == 'APPROVED' && github.event.review.user.login == 'sarathvgts' || github.event.review.user.login == 'nandavgts'
     runs-on: ubuntu-latest
 
     steps:
