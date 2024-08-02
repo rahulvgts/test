@@ -8,33 +8,15 @@ env:
   APP_NAME: test
   APP_ENV: dev
   APP_DIR: /www/data
+  ASSIGNED_APPROVER: ${{ secrets.ASSIGNED_APPROVER }}
 
 jobs:
   build:
+    if: github.event.pull_request.base.ref == 'uat' && github.event.review.state == 'approved' && github.event.review.user.login == env.ASSIGNED_APPROVER
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Clone Repository
         uses: actions/checkout@v4  
         with:
           path: 'dev'
-      
-      - name: Check PR details
-        id: pr_check
-        run: |
-          if [ "${{ github.event.pull_request.base.ref }}" != "uat" ]; then
-            echo "PR base ref is not 'uat'. Exiting."
-            exit 1
-          fi
-          if [ "${{ github.event.review.state }}" != "approved" ]; then
-            echo "PR review state is not 'approved'. Exiting."
-            exit 1
-          fi
-          if [ "${{ github.event.review.user.login }}" != "${{ secrets.ASSIGNED_APPROVER }}" ]; then
-            echo "Review user is not the assigned approver. Exiting."
-            exit 1
-          fi
-          echo "All conditions met."
-
-      - name: Perform Build
-        run: echo "Building application..."
-        if: steps.pr_check.outcome == 'success'
