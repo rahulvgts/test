@@ -8,10 +8,11 @@ env:
   APP_NAME: test
   APP_ENV: dev
   APP_DIR: /www/data
+  ASSIGNED_APPROVER: ${{ secrets.ASSIGNED_APPROVER }}
 
 jobs:
   build:
-    if: github.event.pull_request.base.ref == 'uat' && github.event.review.state == 'approved' && github.event.review.user.login == secrets.ASSIGNED_APPROVER
+    if: github.event.pull_request.base.ref == 'uat' && github.event.review.state == 'approved' && github.event.review.user.login == env.ASSIGNED_APPROVER
     runs-on: ubuntu-latest
 
     steps:
