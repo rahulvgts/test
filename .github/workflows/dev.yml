@@ -10,10 +10,12 @@ env:
   APP_NAME: test
   APP_ENV: dev
   APP_DIR: /www/data
+  assigned_approver: ${{ vars.ASSIGNED_APPROVER }}
 
 
 jobs:
   build:
+    if: github.event.pull_request.base.ref == 'uat' && github.event.review.state == 'approved' && github.event.review.user.login == env.assigned_approver
     runs-on: runner-123
 
 
