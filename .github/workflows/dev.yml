@@ -5,9 +5,6 @@ on:
     types: [review_requested, review_request_removed, submitted]
 
 env:
-  APP_NAME: test
-  APP_ENV: dev
-  APP_DIR: /www/data
   ASSIGNED_APPROVER: ${{ secrets.ASSIGNED_APPROVER }}
 
 jobs:
