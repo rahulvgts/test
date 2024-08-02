@@ -5,20 +5,13 @@ on:
     types: [review_requested, review_request_removed, submitted]
 
 env:
+  APP_NAME: test
+  APP_ENV: dev
+  APP_DIR: /www/data
   ASSIGNED_APPROVER: ${{ secrets.ASSIGNED_APPROVER }}
 
 jobs:
   build:
-    if: >
-      github.event.pull_request.base.ref == 'uat' &&
-      (
-        (github.event_name == 'pull_request' &&
-        github.event.review.state == 'approved' &&
-        github.event.review.user.login == env.ASSIGNED_APPROVER) ||
-        (github.event_name == 'pull_request_review' &&
-        github.event.review.user.login == env.ASSIGNED_APPROVER && 
-        github.event.review.state == 'approved')
-      )
     runs-on: ubuntu-latest
 
     steps:
@@ -26,3 +19,45 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: 'dev'
+
+      - name: Print Environment Variables
+        run: |
+          echo "APP_NAME: $APP_NAME"
+          echo "APP_ENV: $APP_ENV"
+          echo "APP_DIR: $APP_DIR"
+          echo "ASSIGNED_APPROVER: $ASSIGNED_APPROVER"
+          
+      - name: Check Approver Approval
+        id: check_approver
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pull_number = context.issue.number;
+            const assignedApprover = process.env.ASSIGNED_APPROVER;
+            console.log(`Assigned Approver: ${assignedApprover}`);
+            const { data: reviews } = await github.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number
+            });
+
+            const approverApproved = reviews.some(
+              review => review.user.login === assignedApprover && review.state === 'approved'
+            );
+
+            if (context.payload.pull_request.base.ref === 'uat' && approverApproved) {
+              console.log('Approver has approved the pull request and base branch is uat.');
+              return 'true';
+            } else {
+              console.log('Approver has not approved the pull request or base branch is not uat.');
+              return 'false';
+            }
+          result-encoding: string
+        env:
+            ASSIGNED_APPROVER: ${{ secrets.ASSIGNED_APPROVER }}
+
+      - name: Conditional Execution
+        if: steps.check_approver.outputs.result == 'true'
+        run: |
+          echo "Approver approved and branch is uat. Proceeding with additional steps..."
+          # Add your additional steps here
