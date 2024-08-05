@@ -22,7 +22,7 @@ jobs:
           if echo "$APPROVALS" | grep -q '"user": { "login": "harishvgts" }'; then
             echo "harishvgts has approved"
           elif echo "$APPROVALS" | grep -q '"user": { "login": "Rahul83326" }'; then
-            echo "nandavgts has approved"
+            echo "Rahul83326 has approved"
           else
             echo "No required approvers found"
             exit 1
