@@ -18,7 +18,7 @@ jobs:
         id: check_approval
         run: |
           if [[ "${{ github.event.pull_request.base.ref }}" == "uat" && "${{ github.event.review.state }}" == "approved" && ("${{ github.event.review.user.login }}" == "harishvgts" || "${{ github.event.review.user.login }}" == "nandavgts") ]]; then
-            echo "approved_by=true" >> $GITHUB_ENV
+            echo "hello"
           else
-            echo "approved_by=false" >> $GITHUB_ENV
+            echo "hello world"
           fi
