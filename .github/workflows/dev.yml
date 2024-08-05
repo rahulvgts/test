@@ -1,8 +1,9 @@
 name: Development
 
 on:
-  push:
-    branches: uat
+  pull_request:
+    types: [review_requested, review_submitted]
+    branches: [uat]
 
 jobs:
   build:
