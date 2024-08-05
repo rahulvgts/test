@@ -6,7 +6,7 @@ on:
     branches: [uat]
 
 jobs:
-  example-job:
+  check_approvals:
     runs-on: ubuntu-latest
     steps:
       - name: Check PR review
@@ -20,3 +20,16 @@ jobs:
 
       - name: Use the approved_by output
         run: echo "Was the PR approved by the specified users? ${{ env.approved_by }}"
+
+  build:
+    needs: check_approvals
+    if: env.approved_by == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Proceed with Build
+        run: |
+          echo "Approvals are in place. Proceeding with build..."
