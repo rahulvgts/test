@@ -6,7 +6,7 @@ on:
     branches: [uat]
 
 jobs:
-  check_approvals:
+  example-job:
     runs-on: ubuntu-latest
     steps:
       - name: Check PR review
@@ -18,18 +18,12 @@ jobs:
         if: steps.check_review.outcome != 'success'
         run: echo "approved_by=false" >> $GITHUB_ENV
 
-      - name: Use the approved_by output
-        run: echo "Was the PR approved by the specified users? ${{ env.approved_by }}"
-
-  build:
-    needs: check_approvals
-    if: env.approved_by == 'true'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Proceed with Build
+      - name: Fail if not approved
+        if: env.approved_by == 'false'
         run: |
-          echo "Approvals are in place. Proceeding with build..."
+          echo "PR not approved by the specified users. Stopping the build."
+          exit 1
+
+      - name: Use the approved_by output
+        if: env.approved_by == 'true'
+        run: echo "Was the PR approved by the specified users? ${{ env.approved_by }}"
