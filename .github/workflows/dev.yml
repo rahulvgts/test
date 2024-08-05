@@ -17,12 +17,15 @@ jobs:
       - name: Check Pull Request Approval
         id: check_approval
         run: |
-          PR_URL="${{ github.event.pull_request.url }}"
-          APPROVALS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "${PR_URL}/reviews")
-          if echo "$APPROVALS" | grep -q '"user": { "login": "harishvgts" }'; then
+          PR_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews"
+          APPROVALS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$PR_URL")
+
+          # Check if harishvgts has approved
+          if echo "$APPROVALS" | jq -e '.[] | select(.user.login == "harishvgts" and .state == "APPROVED")' > /dev/null; then
             echo "harishvgts has approved"
-          elif echo "$APPROVALS" | grep -q '"user": { "login": "Rahul83326" }'; then
-            echo "Rahul83326 has approved"
+          # Check if nandavgts has approved
+          elif echo "$APPROVALS" | jq -e '.[] | select(.user.login == "nandavgts" and .state == "APPROVED")' > /dev/null; then
+            echo "nandavgts has approved"
           else
             echo "No required approvers found"
             exit 1
