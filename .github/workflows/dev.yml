@@ -2,12 +2,12 @@ name: Development
 
 on:
   pull_request:
-    branches: [uat]
+    branches: uat
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.base.ref == 'uat' && github.event.pull_request.review.state == 'approved' && github.event.pull_request.review.user.login == 'harishvgts' }}
+    if: github.event.pull_request.base.ref == 'uat' && github.event.pull_request.review.state == 'approved' && github.event.pull_request.review.user.login == 'harishvgts'
 
     steps:
       - name: Clone Repository
