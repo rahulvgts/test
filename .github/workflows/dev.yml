@@ -5,7 +5,7 @@ on:
     branches: [uat]
 
 jobs:
-  build:
+  check_approvals:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,17 +16,33 @@ jobs:
 
       - name: Check Pull Request Approval
         id: check_approval
-        run: |
-          PR_URL="${{ github.event.pull_request.url }}"
-          APPROVALS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "${PR_URL}/reviews")
-          if echo "$APPROVALS" | grep -q '"user": { "login": "harishvgts" }'; then
-            echo "harishvgts has approved"
-          elif echo "$APPROVALS" | grep -q '"user": { "login": "Rahul83326" }'; then
-            echo "nandavgts has approved"
-          else
-            echo "No required approvers found"
-            exit 1
-          fi
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: reviews } = await github.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+
+            const approved = reviews.some(review => 
+              (review.user.login === 'harishvgts' || review.user.login === 'nandavgts') && 
+              review.state === 'APPROVED'
+            );
+
+            if (!approved) {
+              core.setFailed('Required approvers have not approved the pull request.');
+            }
+
+  build:
+    needs: check_approvals
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: 'dev'
 
       - name: Proceed with Build
         run: |
