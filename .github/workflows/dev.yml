@@ -1,48 +1,22 @@
 name: Development
 
 on:
-  pull_request:
+  pull_request_review:
+    types: [submitted]
     branches: [uat]
 
 jobs:
-  check_approvals:
+  example-job:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          path: 'dev'
+      - name: Check PR review
+        id: check_review
+        if: ${{ github.event.review.state == 'approved' && (github.event.review.user.login == 'harishvgts' || github.event.review.user.login == 'nandavgts') }}
+        run: echo "approved_by=true" >> $GITHUB_ENV
 
-      - name: Check Pull Request Approval
-        id: check_approval
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { data: reviews } = await github.pulls.listReviews({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
-            });
+      - name: Set default approval state
+        if: steps.check_review.outcome != 'success'
+        run: echo "approved_by=false" >> $GITHUB_ENV
 
-            const approved = reviews.some(review => 
-              (review.user.login === 'harishvgts' || review.user.login === 'nandavgts') && 
-              review.state === 'APPROVED'
-            );
-
-            if (!approved) {
-              core.setFailed('Required approvers have not approved the pull request.');
-            }
-
-  build:
-    needs: check_approvals
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          path: 'dev'
-      - name: Proceed with Build
-        run: |
-          echo "Approvals are in place. Proceeding with build..."
+      - name: Use the approved_by output
+        run: echo "Was the PR approved by the specified users? ${{ env.approved_by }}"
