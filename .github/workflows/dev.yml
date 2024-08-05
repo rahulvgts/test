@@ -43,7 +43,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: 'dev'
-
       - name: Proceed with Build
         run: |
           echo "Approvals are in place. Proceeding with build..."
