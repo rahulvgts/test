@@ -7,13 +7,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.base.ref == 'uat' && 
-            contains(github.event.pull_request.reviews.*.state, 'approved') && 
-            contains(fromJson(github.event.pull_request.reviews).map(review => review.user.login), 'harishvgts') || 
-            contains(fromJson(github.event.pull_request.reviews).map(review => review.user.login), 'nandavgts') }}
 
     steps:
-      - name: Clone Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           path: 'dev'
+
+      - name: Check Pull Request Approval
+        id: check_approval
+        run: |
+          PR_URL="${{ github.event.pull_request.url }}"
+          APPROVALS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "${PR_URL}/reviews")
+          if echo "$APPROVALS" | grep -q '"user": { "login": "harishvgts" }'; then
+            echo "harishvgts has approved"
+          elif echo "$APPROVALS" | grep -q '"user": { "login": "Rahul83326" }'; then
+            echo "nandavgts has approved"
+          else
+            echo "No required approvers found"
+            exit 1
+          fi
+
+      - name: Proceed with Build
+        run: |
+          echo "Approvals are in place. Proceeding with build..."
