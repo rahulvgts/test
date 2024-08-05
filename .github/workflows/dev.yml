@@ -7,10 +7,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.base.ref == 'uat' && 
-            contains(github.event.pull_request.reviews.*.state, 'approved') && 
-            contains(fromJson(github.event.pull_request.reviews).map(review => review.user.login), 'harishvgts') || 
-            contains(fromJson(github.event.pull_request.reviews).map(review => review.user.login), 'nandavgts') }}
+    if: |
+      github.event.pull_request.base.ref == 'uat' &&
+      (
+        contains(
+          fromJson(github.event.pull_request.reviews).map(review => review.user.login),
+          'harishvgts'
+        ) ||
+        contains(
+          fromJson(github.event.pull_request.reviews).map(review => review.user.login),
+          'nandavgts'
+        )
+      )
 
     steps:
       - name: Clone Repository
