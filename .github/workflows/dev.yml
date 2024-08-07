@@ -20,6 +20,11 @@ jobs:
           else
             echo "approved_by=false" >> $GITHUB_ENV
             echo "::set-output name=approved_by::false"
+      - name: Fail if not approved
+        run: |
+          if [[ "${{ steps.check_review.outputs.approved_by }}" == "false" ]]; then
+            echo "This PR cannot be merged until it is approved by the assigned approvers."
+            exit 1
           fi
 
   build:
