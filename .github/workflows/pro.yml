@@ -1,0 +1,29 @@
+name: Production
+
+on:
+  push:
+    branches: [prod]
+
+jobs:
+  build:
+    runs-on: runner-123
+
+    steps:
+      - name: Clone Repository
+        uses: action/checkout@v4
+        with:
+          path: pro
+
+      - name: Declare variable
+        run: cd pro && npm install
+
+      - name: Copy .env
+        run: | 
+          cd pro
+          sudo mv .env.pro .env
+
+      - name: Build
+        run: cd pro && npm build
+
+      - name: Restart Nginx
+        run: sudo service restart nginx
