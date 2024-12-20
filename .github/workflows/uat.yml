@@ -1,0 +1,29 @@
+name: UAT
+
+on:
+  push:
+    branches: [uat]
+
+jobs:
+  build:
+    runs-on: runner-123
+
+    steps:
+      - name: Clone Repository
+        uses: action/checkout@v4
+        with:
+          path: uat
+
+      - name: Delcare the variables && Install the Dependencies
+        run: cd uat && npm install
+
+      - name: Copy .env.uat .env
+        run: |
+          cd uat
+          sudo mv .env.uat .env
+
+      - name: Build
+        run: cd uat && npm build
+
+      - name: Restart nginx
+        run: sudo service restart nginx
