@@ -6,7 +6,7 @@ on:
     branches: [uat]
 jobs:
   check-review:
-    runs-on: ubuntu-latest
+    runs-on: runner-123
     outputs:
       approved_by: ${{ steps.check_review.outputs.approved_by }}
     steps:
@@ -30,7 +30,7 @@ jobs:
 
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: runner-123
     needs: check-review
     if: needs.check-review.outputs.approved_by == 'true'
     steps:
