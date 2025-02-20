@@ -1,50 +1,38 @@
-
 name: Development
 
 on:
-  push:
-    branches: dev
-
-
-env:
-  APP_NAME: test
-  APP_ENV: dev
-  APP_DIR: /www/data
-
+  pull_request_review:
+    types: [submitted]
+    branches: [uat]
 
 jobs:
-  build:
-    runs-on: runner-123
-
-
+  check-review:
+    runs-on: ubuntu-latest
+    outputs:
+      approved_by: ${{ steps.check_review.outputs.approved_by }}
     steps:
-      - name: Clone Repository
-        uses: actions/checkout@v4  
-        with:
-          path: 'dev'
-
-      - name: Declare Variables
-        shell: bash
+      - name: Check PR review
+        id: check_review
         run: |
-          cd dev
-          echo "SHA_SHORT=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
-          echo "CURRENT_DIR=$APP_DIR/$APP_NAME/$APP_ENV/repos/$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
-
-      - name: Coping Files
+          if [[ "${{ github.event.review.state }}" == "approved" && ("${{ github.event.review.user.login }}" == "harishvgts" || "${{ github.event.review.user.login }}" == "nandavgts") ]]; then
+            echo "approved_by=true" >> $GITHUB_ENV
+            echo "::set-output name=approved_by::true"
+          else
+            echo "approved_by=false" >> $GITHUB_ENV
+            echo "::set-output name=approved_by::false"
+          fi
+          
+      - name: Fail if not approved
         run: |
-          sudo mkdir -p $CURRENT_DIR
-          sudo cp -a $APP_ENV/. $CURRENT_DIR
-          sudo chmod -R 777 $CURRENT_DIR && sudo chmod -R 777 $CURRENT_DIR/*
-          sudo chown -R unit:unit $CURRENT_DIR && sudo chown -R unit:unit $CURRENT_DIR/*
+          if [[ "${{ steps.check_review.outputs.approved_by }}" == "false" ]]; then
+            echo "This PR cannot be merged until it is approved by the assigned approvers."
+            exit 1
+          fi
 
-
-      - name: Updating Configuration - 1
-        run: |
-          sudo curl -X PUT --unix-socket /var/run/control.unit.sock /var/run/control.unit.sock http://localhost/config/applications/blog/root \
-          -H "Content-Type: application/json" \
-          -d '"${{ env.CURRENT_DIR }}"' || exit 1
-
-      - name: Remove Excess Folders
-        run: |
-          cd $CURRENT_DIR && cd ../ || exit
-          stat -c '%W %n' * | sort -k1n | awk '{print $2}' | head -n -2 | sudo xargs -r rm -r
+  build:
+    runs-on: ubuntu-latest
+    needs: check-review
+    if: needs.check-review.outputs.approved_by == 'true'
+    steps:
+      - name: Run build
+        run: echo "Build process starts..."
