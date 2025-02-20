@@ -7,7 +7,7 @@ on:
 
 jobs:
   check-review:
-    runs-on: runner-123
+    runs-on: ubuntu-latest
     outputs:
       approved_by: ${{ steps.check_review.outputs.approved_by }}
     steps:
