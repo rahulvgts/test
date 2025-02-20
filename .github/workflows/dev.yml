@@ -4,7 +4,6 @@ on:
   pull_request_review:
     types: [submitted]
     branches: [uat]
-
 jobs:
   check-review:
     runs-on: ubuntu-latest
